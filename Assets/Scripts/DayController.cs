@@ -8,6 +8,7 @@ public class DayController : MonoBehaviour
     public GameObject actionsPanel; // Panel na akcje - praca, dom, fucha
 
     private GameState gs;
+    private bool notebooksEventDone = false;
 
     private void Start()
     {
@@ -32,6 +33,15 @@ public class DayController : MonoBehaviour
         }
     }
 
+    private void CheckEventsAfterAction()
+    {
+        // Event zeszytów: pierwszy raz, gdy zaczyna siê dzieñ 2
+        if (!notebooksEventDone && gs.day == 2)
+        {
+            StartNotebooksEvent();
+        }
+    }
+
     public void GoToWork()
     {
         if (gs.energy < 20)
@@ -46,6 +56,8 @@ public class DayController : MonoBehaviour
 
         gs.NextDay();
         Log("Poszed³eœ do pracy w zak³adzie. Wróci³eœ zmêczony, ale z wyp³at¹. Dzieñ " + gs.day + ".");
+
+        CheckEventsAfterAction();
     }
 
     public void TakeOddJob()
@@ -63,6 +75,8 @@ public class DayController : MonoBehaviour
 
         gs.NextDay();
         Log("Wzi¹³eœ fuchê na boku. Wiêcej pieniêdzy, ale mniej si³ i czasu dla rodziny. Dzieñ " + gs.day + ".");
+
+        CheckEventsAfterAction();
     }
 
     public void StayAtHome()
@@ -74,6 +88,8 @@ public class DayController : MonoBehaviour
 
         gs.NextDay();
         Log("Zosta³eœ w domu. Odpocz¹³eœ, ale pieni¹dze siê topniej¹. Dzieñ " + gs.day + ".");
+
+        CheckEventsAfterAction();
     }
 
     private void StartIntroFactoryEvent()
@@ -96,6 +112,30 @@ public class DayController : MonoBehaviour
             OnTakeSeverance,
             "Zostajê w zak³adzie",
             OnStayInFactory);
+    }
+
+    private void StartNotebooksEvent()
+    {
+        notebooksEventDone = true;
+
+        // wy³¹cz przyciski akcji na czas eventu
+        if (actionsPanel != null)
+        {
+            actionsPanel.SetActive(false);
+        }
+
+        string desc =
+            "Wieczorem dziecko siada do lekcji.\n" +
+            "\"Pani mówi³a, ¿e musimy mieæ nowe zeszyty, bo stare ju¿ ca³e zapisane...\" \n\n" +
+            "Wiesz, ¿e za kilka dni trzeba zap³aciæ czynsz. Ka¿dy wydatek zaczyna boleæ.";
+
+        eventUI.ShowEvent(
+            desc,
+            "Kupujesz zeszyty mimo wszystko",
+            OnBuyNotebooks,
+            "Mówisz, ¿e nie staæ was teraz",
+            OnRefuseNotebooks
+        );
     }
 
     private void OnTakeSeverance()
@@ -130,6 +170,34 @@ public class DayController : MonoBehaviour
             Log("Postanowi³eœ zostaæ w zak³adzie. Na razie masz etat, " +
             "ale wszyscy mówi¹, ¿e zwolnienia dopiero siê zaczynaj¹.");
         }
+
+        if (actionsPanel != null)
+        {
+            actionsPanel.SetActive(true);
+        }
+    }
+
+    private void OnBuyNotebooks()
+    {
+        gs.ChangeMoney(-1000);            // symboliczny koszt
+        gs.ChangeRelationChild(+5);
+        gs.ChangeMentalHealth(+1);
+
+        Log("Kupujesz zeszyty. To drobiazg, ale wiesz, ¿e dziecko nie bêdzie siê czu³o gorsze od innych.");
+
+        if (actionsPanel != null)
+        {
+            actionsPanel.SetActive(true);
+        }
+    }
+
+    private void OnRefuseNotebooks()
+    {
+        gs.ChangeRelationChild(-5);
+        gs.ChangeMentalHealth(-3);
+
+        Log("Mówisz, ¿e teraz nie staæ was na nowe zeszyty. Dziecko milknie. " +
+            "Wiesz, ¿e zapamiêta takich momentów wiêcej.");
 
         if (actionsPanel != null)
         {
