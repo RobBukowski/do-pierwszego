@@ -14,6 +14,10 @@ public class GameState : MonoBehaviour
     [Header("Time")]
     public int day = 1;
 
+    [Header("Job")]
+    public bool hasFactoryJob = true; // Zaczynamy pracujac w zakladzie
+    public bool tookSeverance = false; // odprawa
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
